@@ -1,0 +1,10 @@
+platform :ios, '11.0'
+
+target 'GraphLayout_Example' do
+  pod 'GraphLayout', :path => '../'
+
+  target 'GraphLayout_Tests' do
+    inherit! :search_paths
+
+  end
+end
