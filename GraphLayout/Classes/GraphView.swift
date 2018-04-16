@@ -11,7 +11,8 @@ public class GraphView: UIView {
     public var padding: CGFloat = 8
 
     public func calcSize(graph: Graph) -> CGSize {
-        if let size = graph.size() {
+        if graph.size != CGSize.zero {
+            let size = graph.size
             return CGSize(width: size.width + 2 * padding, height: size.height + 2 * padding)
         }
         return CGSize.zero

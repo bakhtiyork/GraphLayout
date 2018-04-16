@@ -186,7 +186,7 @@ public class GraphLayout: UICollectionViewLayout, UICollectionViewDataSource {
 
     /// :nodoc:
     public override var collectionViewContentSize: CGSize {
-        return graph?.size() ?? CGSize(width: 0, height: 0)
+        return graph?.size ?? CGSize.zero
     }
 
     /// :nodoc:

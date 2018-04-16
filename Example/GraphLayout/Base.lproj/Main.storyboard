@@ -8,10 +8,10 @@
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
-        <!--GraphLayout-->
+        <!--Tap node to remove-->
         <scene sceneID="ufC-wZ-h7g">
             <objects>
-                <viewController id="vXZ-lx-hvc" customClass="GraphLayoutViewController" customModule="GraphLayout_Example" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController title="Tap node to remove" id="vXZ-lx-hvc" customClass="GraphLayoutViewController" customModule="GraphLayout_Example" customModuleProvider="target" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="jyV-Pf-zRb"/>
                         <viewControllerLayoutGuide type="bottom" id="2fi-mo-0CV"/>

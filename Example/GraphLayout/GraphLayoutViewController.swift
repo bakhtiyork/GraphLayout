@@ -12,22 +12,28 @@ class GraphLayoutViewController: UIViewController, UICollectionViewDelegate {
     @IBOutlet var collectionView: UICollectionView!
 
     var graph: Graph = DataSource.createGraph()
+    var layout: GraphLayout!
+    var selectedNodeIndexPath: IndexPath?
     override func viewDidLoad() {
         super.viewDidLoad()
-        graph.applyLayout()
-
-        let layout = GraphLayout()
+        layout = GraphLayout()
         layout.graph = graph
         layout.setup(collectionView: collectionView)
-        layout.invalidateLayout()
-
         collectionView.delegate = self
+        updateLayout()
     }
 
     public func collectionView(_: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         if indexPath.section == GraphLayoutCellType.Node.rawValue {
             let node = graph.nodes[indexPath.item]
-            navigationItem.title = node.label
+            graph.removeNode(node: node)
+            updateLayout()
         }
+    }
+
+    func updateLayout() {
+        graph.applyLayout()
+        collectionView.reloadData()
+        layout.invalidateLayout()
     }
 }

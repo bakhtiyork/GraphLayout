@@ -10,33 +10,25 @@ public enum Shape: String {
     case rectangle, box, hexagon, polygon, diamond, star, ellipse, circle
 }
 
-public class Edge {
+public class Edge: Equatable {
     fileprivate var gvlEdge: GVLEdge?
 
+    var from: Node
+    var to: Node
     public var color: UIColor = UIColor.black
     public var width: Float = 1.0
-    public var weight: Int {
-        get {
-            if let value = gvlEdge?.getAttributeForKey("weight") {
-                if let weight = Int(value) {
-                    return weight
-                }
-            }
-            return 1
-        }
-        set {
-            gvlEdge?.setAttribute(newValue.description, forKey: "weight")
-        }
-    }
+    public var weight: Float = 1
 
-    public init(from _: Node, to _: Node) {
+    public init(from node1: Node, to node2: Node) {
+        from = node1
+        to = node2
     }
 
     public func getAttribute(name: String) -> String? {
         return gvlEdge?.getAttributeForKey(name)
     }
 
-    public func setAttribute(name: String, value: String) {
+    func setAttribute(name: String, value: String) {
         gvlEdge?.setAttribute(value, forKey: name)
     }
 
@@ -59,29 +51,27 @@ public class Edge {
     public func tailArrow() -> UIBezierPath? {
         return gvlEdge?.tailArrow()
     }
+
+    func prepare() {
+        setAttribute(name: "weight", value: weight.description)
+    }
+
+    public static func == (lhs: Edge, rhs: Edge) -> Bool {
+        return lhs === rhs
+    }
 }
 
-public class Node {
+public class Node: Equatable {
     fileprivate var gvlNode: GVLNode?
+
     public let label: String
     public var color: UIColor = UIColor.white
     public var highlihtedColor: UIColor = UIColor.lightGray
     public var borderColor: UIColor = UIColor.black
     public var borderWidth: Float = 1.0
     public var textColor: UIColor = UIColor.black
-    public var fontSize: Int {
-        get {
-            if let value = gvlNode?.getAttributeForKey("fontsize") {
-                if let fontsize = Int(value) {
-                    return fontsize
-                }
-            }
-            return 14
-        }
-        set {
-            gvlNode?.setAttribute(newValue.description, forKey: "fontsize")
-        }
-    }
+    public var fontSize: Int = 14
+    public var shape: Shape = .ellipse
 
     public init(label: String) {
         self.label = label
@@ -91,7 +81,7 @@ public class Node {
         return gvlNode?.getAttributeForKey(name)
     }
 
-    public func setAttribute(name: String, value: String) {
+    func setAttribute(name: String, value: String) {
         gvlNode?.setAttribute(value, forKey: name)
     }
 
@@ -107,15 +97,13 @@ public class Node {
         return gvlNode?.path()
     }
 
-    public var shape: Shape {
-        get {
-            let value = gvlNode?.getAttributeForKey("shape")
-            let shape = Shape(rawValue: value!)
-            return shape ?? Shape.ellipse
-        }
-        set {
-            gvlNode?.setAttribute(String(describing: newValue), forKey: "shape")
-        }
+    func prepare() {
+        setAttribute(name: "fontsize", value: fontSize.description)
+        setAttribute(name: "shape", value: shape.rawValue)
+    }
+
+    public static func == (lhs: Node, rhs: Node) -> Bool {
+        return lhs === rhs
     }
 }
 
@@ -130,24 +118,12 @@ public enum Splines: String {
 }
 
 public class Graph {
+    fileprivate var gvlGraph: GVLGraph?
+
     public private(set) var nodes = [Node]()
     public private(set) var edges = [Edge]()
-
-    public var splines: Splines {
-        get {
-            if let value = gvlGraph.getAttributeForKey("splines") {
-                if let splines = Splines(rawValue: value) {
-                    return splines
-                }
-            }
-            return .spline
-        }
-        set {
-            gvlGraph.setAttribute(newValue.rawValue, forKey: "splines")
-        }
-    }
-
-    fileprivate let gvlGraph: GVLGraph
+    public private(set) var size = CGSize.zero
+    public var splines: Splines = .spline
 
     public init() {
         gvlGraph = GVLGraph()
@@ -155,33 +131,55 @@ public class Graph {
 
     public func addNode(_ label: String) -> Node {
         let node = Node(label: label)
-        let gvlNode = gvlGraph.addNode(label)
-        node.gvlNode = gvlNode
         nodes.append(node)
         return node
     }
 
+    public func removeNode(node: Node) {
+        guard nodes.count > 1 else { return }
+        if let index = nodes.index(of: node) {
+            for edge in edges {
+                if edge.from == node || edge.to == node {
+                    removeEdge(edge: edge)
+                }
+            }
+            nodes.remove(at: index)
+        }
+    }
+
     public func addEdge(from node1: Node, to node2: Node) -> Edge {
         let edge = Edge(from: node1, to: node2)
-        let gvlEdge = gvlGraph.addEdge(withSource: node1.gvlNode, andTarget: node2.gvlNode)
-        edge.gvlEdge = gvlEdge
         edges.append(edge)
         return edge
     }
 
-    public func getAttribute(name: String) -> String? {
-        return gvlGraph.getAttributeForKey(name)
-    }
-
-    public func setAttribute(name: String, value: String) {
-        gvlGraph.setAttribute(value, forKey: name)
-    }
-
-    public func size() -> CGSize? {
-        return gvlGraph.size()
+    public func removeEdge(edge: Edge) {
+        if let index = edges.index(of: edge) {
+            edges.remove(at: index)
+        }
     }
 
     public func applyLayout() {
-        gvlGraph.applyLayout()
+        gvlGraph = GVLGraph()
+        if let gvlGraph = self.gvlGraph {
+            for node in nodes {
+                let gvlNode = gvlGraph.addNode(node.label)
+                node.gvlNode = gvlNode
+                node.prepare()
+            }
+            for edge in edges {
+                let gvlEdge = gvlGraph.addEdge(withSource: edge.from.gvlNode, andTarget: edge.to.gvlNode)
+                edge.gvlEdge = gvlEdge
+                edge.prepare()
+            }
+
+            prepare()
+            gvlGraph.applyLayout()
+            size = gvlGraph.size()
+        }
+    }
+
+    func prepare() {
+        gvlGraph?.setAttribute(splines.rawValue, forKey: "splines")
     }
 }
