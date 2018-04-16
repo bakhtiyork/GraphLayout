@@ -6,13 +6,13 @@
 //  MIT License
 //
 
-public enum Shape : String {
+public enum Shape: String {
     case rectangle, box, hexagon, polygon, diamond, star, ellipse, circle
 }
 
 public class Edge {
-    fileprivate var gvlEdge:GVLEdge?
-    
+    fileprivate var gvlEdge: GVLEdge?
+
     public var color: UIColor = UIColor.black
     public var width: Float = 1.0
     public var weight: Int {
@@ -28,41 +28,41 @@ public class Edge {
             gvlEdge?.setAttribute(newValue.description, forKey: "weight")
         }
     }
-    
-    public init(from node1: Node, to node2: Node) {
+
+    public init(from _: Node, to _: Node) {
     }
-    
+
     public func getAttribute(name: String) -> String? {
         return gvlEdge?.getAttributeForKey(name)
     }
-    
+
     public func setAttribute(name: String, value: String) {
         gvlEdge?.setAttribute(value, forKey: name)
     }
-    
+
     public func frame() -> CGRect? {
         return gvlEdge?.frame()
     }
-    
+
     public func bounds() -> CGRect? {
         return gvlEdge?.bounds()
     }
-    
+
     public func body() -> UIBezierPath? {
         return gvlEdge?.body()
     }
-    
+
     public func headArrow() -> UIBezierPath? {
         return gvlEdge?.headArrow()
     }
-    
+
     public func tailArrow() -> UIBezierPath? {
         return gvlEdge?.tailArrow()
     }
 }
 
 public class Node {
-    fileprivate var gvlNode:GVLNode?
+    fileprivate var gvlNode: GVLNode?
     public let label: String
     public var color: UIColor = UIColor.white
     public var highlihtedColor: UIColor = UIColor.lightGray
@@ -82,31 +82,31 @@ public class Node {
             gvlNode?.setAttribute(newValue.description, forKey: "fontsize")
         }
     }
-    
+
     public init(label: String) {
         self.label = label
     }
-    
+
     public func getAttribute(name: String) -> String? {
         return gvlNode?.getAttributeForKey(name)
     }
-    
+
     public func setAttribute(name: String, value: String) {
         gvlNode?.setAttribute(value, forKey: name)
     }
-    
+
     public func frame() -> CGRect? {
         return gvlNode?.frame()
     }
-    
+
     public func bounds() -> CGRect? {
         return gvlNode?.bounds()
     }
-    
+
     public func path() -> UIBezierPath? {
         return gvlNode?.path()
     }
-    
+
     public var shape: Shape {
         get {
             let value = gvlNode?.getAttributeForKey("shape")
@@ -120,10 +120,9 @@ public class Node {
 }
 
 public class SubGraph {
-
 }
 
-public enum Splines : String {
+public enum Splines: String {
     case spline
     case polyline
     case ortho
@@ -133,7 +132,7 @@ public enum Splines : String {
 public class Graph {
     public private(set) var nodes = [Node]()
     public private(set) var edges = [Edge]()
-    
+
     public var splines: Splines {
         get {
             if let value = gvlGraph.getAttributeForKey("splines") {
@@ -145,17 +144,15 @@ public class Graph {
         }
         set {
             gvlGraph.setAttribute(newValue.rawValue, forKey: "splines")
-        
         }
     }
-    
-    
+
     fileprivate let gvlGraph: GVLGraph
-    
+
     public init() {
         gvlGraph = GVLGraph()
     }
-    
+
     public func addNode(_ label: String) -> Node {
         let node = Node(label: label)
         let gvlNode = gvlGraph.addNode(label)
@@ -163,7 +160,7 @@ public class Graph {
         nodes.append(node)
         return node
     }
-    
+
     public func addEdge(from node1: Node, to node2: Node) -> Edge {
         let edge = Edge(from: node1, to: node2)
         let gvlEdge = gvlGraph.addEdge(withSource: node1.gvlNode, andTarget: node2.gvlNode)
@@ -171,21 +168,20 @@ public class Graph {
         edges.append(edge)
         return edge
     }
-    
+
     public func getAttribute(name: String) -> String? {
         return gvlGraph.getAttributeForKey(name)
     }
-    
+
     public func setAttribute(name: String, value: String) {
         gvlGraph.setAttribute(value, forKey: name)
     }
-    
+
     public func size() -> CGSize? {
         return gvlGraph.size()
     }
-    
+
     public func applyLayout() {
         gvlGraph.applyLayout()
     }
 }
-

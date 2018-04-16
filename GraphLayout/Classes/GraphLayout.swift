@@ -6,12 +6,11 @@
 //  MIT License
 //
 
-
-public class GraphLayoutNodeView : UICollectionViewCell {
+public class GraphLayoutNodeView: UICollectionViewCell {
     class func kind() -> String {
         return String(describing: GraphLayoutNodeView.self)
     }
-    
+
     public var label: UILabel!
     public var maskLayer: CAShapeLayer!
     public var shapeLayer: CAShapeLayer!
@@ -22,13 +21,13 @@ public class GraphLayoutNodeView : UICollectionViewCell {
         set {
             _node = newValue
             if let node = _node {
-                self.label.text = node.label
-                self.label.font = UIFont.systemFont(ofSize: CGFloat(node.fontSize))
-                self.label.textColor = node.textColor
+                label.text = node.label
+                label.font = UIFont.systemFont(ofSize: CGFloat(node.fontSize))
+                label.textColor = node.textColor
                 if let bezierPath = node.path(), let frame = node.bounds() {
                     maskLayer.frame = frame
                     maskLayer.path = bezierPath.cgPath
-                    
+
                     shapeLayer.frame = frame
                     shapeLayer.path = bezierPath.cgPath
                     shapeLayer.lineWidth = UIScreen.main.scale * CGFloat(node.borderWidth)
@@ -42,28 +41,28 @@ public class GraphLayoutNodeView : UICollectionViewCell {
             }
         }
     }
-    
+
     private var _node: Node?
-    
+
     public required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
         setup()
     }
-    
+
     public override init(frame: CGRect) {
         super.init(frame: frame)
         setup()
     }
-    
+
     internal func setup() {
-        self.isOpaque = false
-        self.backgroundColor = UIColor.clear
-        
+        isOpaque = false
+        backgroundColor = UIColor.clear
+
         maskLayer = CAShapeLayer()
-        self.layer.mask = maskLayer
+        layer.mask = maskLayer
         shapeLayer = CAShapeLayer()
-        self.layer.addSublayer(shapeLayer)
-        
+        layer.addSublayer(shapeLayer)
+
         label = UILabel()
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -72,7 +71,7 @@ public class GraphLayoutNodeView : UICollectionViewCell {
         label.font = UIFont.systemFont(ofSize: 15)
         label.sizeToFit()
         addSubview(label)
-        
+
         label.leadingAnchor.constraint(equalTo: leadingAnchor).isActive = true
         label.trailingAnchor.constraint(equalTo: trailingAnchor).isActive = true
         label.topAnchor.constraint(equalTo: topAnchor).isActive = true
@@ -80,29 +79,30 @@ public class GraphLayoutNodeView : UICollectionViewCell {
     }
 }
 
-public class GraphLayoutEdgeView : UICollectionViewCell {
+public class GraphLayoutEdgeView: UICollectionViewCell {
     class func kind() -> String {
         return String(describing: GraphLayoutEdgeView.self)
     }
+
     static let padding: CGFloat = 8
-    
+
     public fileprivate(set) var edge: Edge?
-    
+
     public required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
         setup()
     }
-    
+
     public override init(frame: CGRect) {
         super.init(frame: frame)
         setup()
     }
-    
+
     internal func setup() {
-        self.isOpaque = false
-        self.backgroundColor = UIColor.clear
+        isOpaque = false
+        backgroundColor = UIColor.clear
     }
-    
+
     public override func draw(_ rect: CGRect) {
         super.draw(rect)
         if let edge = edge, let context = UIGraphicsGetCurrentContext() {
@@ -111,18 +111,18 @@ public class GraphLayoutEdgeView : UICollectionViewCell {
             edge.color.setStroke()
             edge.color.setFill()
             let edgeWidth = CGFloat(edge.width)
-            
+
             if let path = edge.body() {
                 path.lineWidth = edgeWidth
                 path.stroke()
             }
-            
+
             if let headArrow = edge.headArrow() {
                 headArrow.lineWidth = edgeWidth
                 headArrow.fill()
                 headArrow.stroke()
             }
-            
+
             if let tailArrow = edge.tailArrow() {
                 tailArrow.lineWidth = edgeWidth
                 tailArrow.fill()
@@ -139,17 +139,17 @@ public enum GraphLayoutCellType: Int {
 }
 
 public class GraphLayout: UICollectionViewLayout, UICollectionViewDataSource {
-    public var graph:Graph? = nil
+    public var graph: Graph?
     /// :nodoc:
     internal var cachedAttributes = [NSIndexPath: UICollectionViewLayoutAttributes]()
-    
+
     public func setup(collectionView: UICollectionView) {
         collectionView.register(GraphLayoutNodeView.self, forCellWithReuseIdentifier: "node")
         collectionView.register(GraphLayoutEdgeView.self, forCellWithReuseIdentifier: "edge")
         collectionView.dataSource = self
         collectionView.collectionViewLayout = self
     }
-    
+
     /// :nodoc:
     public override func prepare() {
         super.prepare()
@@ -157,37 +157,38 @@ public class GraphLayout: UICollectionViewLayout, UICollectionViewDataSource {
         if let graph = self.graph {
             let nodes = graph.nodes
             let edges = graph.edges
-            
+
             for (index, node) in nodes.enumerated() {
                 let indexPath = IndexPath(item: index, section: 0)
                 let attributes = UICollectionViewLayoutAttributes(forCellWith: indexPath)
                 let frame = node.bounds()!
                 let center = node.frame()!.origin
                 attributes.frame = frame
-                attributes.center = CGPoint(x: center.x + frame.width/2, y: center.y + frame.height/2)
+                attributes.center = CGPoint(x: center.x + frame.width / 2, y: center.y + frame.height / 2)
                 cachedAttributes[indexPath as NSIndexPath] = attributes
             }
             for (index, edge) in edges.enumerated() {
                 let indexPath = IndexPath(item: index, section: 1)
                 let attributes = UICollectionViewLayoutAttributes(forCellWith: indexPath)
                 let bounds = edge.frame()!
-                attributes.bounds = CGRect(origin: CGPoint(x:0, y:0), size: CGSize(width: bounds.size.width + 2 * GraphLayoutEdgeView.padding, height: bounds.size.height + 2 * GraphLayoutEdgeView.padding))
+                attributes.bounds = CGRect(origin: CGPoint(x: 0, y: 0), size: CGSize(width: bounds.size.width + 2 * GraphLayoutEdgeView.padding, height: bounds.size.height + 2 * GraphLayoutEdgeView.padding))
                 attributes.center = CGPoint(x: bounds.midX, y: bounds.midY)
                 attributes.zIndex = -1
                 cachedAttributes[indexPath as NSIndexPath] = attributes
             }
         }
     }
+
     /// :nodoc:
     public override func layoutAttributesForItem(at indexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
         return cachedAttributes[indexPath as NSIndexPath]
     }
-    
+
     /// :nodoc:
     public override var collectionViewContentSize: CGSize {
         return graph?.size() ?? CGSize(width: 0, height: 0)
     }
-    
+
     /// :nodoc:
     public override func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {
         var layoutAttributes = [UICollectionViewLayoutAttributes]()
@@ -198,13 +199,12 @@ public class GraphLayout: UICollectionViewLayout, UICollectionViewDataSource {
         }
         return layoutAttributes
     }
-    
-    public func numberOfSections(in collectionView: UICollectionView) -> Int {
+
+    public func numberOfSections(in _: UICollectionView) -> Int {
         return 2
     }
-    
-    public func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int
-    {
+
+    public func collectionView(_: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         if let graph = self.graph {
             switch section {
             case GraphLayoutCellType.Node.rawValue:
@@ -217,9 +217,8 @@ public class GraphLayout: UICollectionViewLayout, UICollectionViewDataSource {
         }
         return 0
     }
-    
-    public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell
-    {
+
+    public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         if indexPath.section == GraphLayoutCellType.Node.rawValue {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "node", for: indexPath) as! GraphLayoutNodeView
             cell.node = graph!.nodes[indexPath.row]
