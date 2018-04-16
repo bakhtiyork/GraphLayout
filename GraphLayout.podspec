@@ -6,7 +6,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'GraphLayout'
-  s.version          = '0.1.0'
+  s.version          = '0.1.1'
   s.summary          = 'GraphLayout - UI controls for  graph visualization. It is powered by Graphviz'
 
   s.description      = <<-DESC
